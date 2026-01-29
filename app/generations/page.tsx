@@ -2,25 +2,25 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-
-type Generation = {
-  name: string;
-  url: string;
-};
+import {
+  getGenerationList,
+  type NamedApiResource,
+} from "@/app/utils/pokemonapi";
+import SearchBar from "@/app/components/SearchBar";
 
 export default function GenerationsPage() {
-  const [generations, setGenerations] = useState<Generation[]>([]);
+  const [generations, setGenerations] = useState<NamedApiResource[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchGenerations() {
       try {
-        const res = await fetch(
-          "https://pokeapi.co/api/v2/generation"
-        );
-        const data = await res.json();
-        setGenerations(data.results);
+        const result = await getGenerationList();
+        if (!result.ok) {
+          throw new Error("Failed to fetch generations");
+        }
+        setGenerations(result.data.results);
       } catch (err) {
         console.error("Failed to fetch generations", err);
       } finally {
@@ -54,12 +54,11 @@ export default function GenerationsPage() {
 
       {/* Search */}
       <div className="flex justify-end">
-        <input
-          type="text"
-          placeholder="Search All Generations"
+        <SearchBar
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border rounded-lg px-4 py-2 w-full max-w-sm"
+          onChange={setSearch}
+          placeholder="Search All Generations"
+          className="rounded-lg"
         />
       </div>
 

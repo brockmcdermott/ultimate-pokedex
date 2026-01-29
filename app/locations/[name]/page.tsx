@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import BackButton from "@/app/components/BackButton";
+import { getByUrl, getLocation } from "@/app/utils/pokemonapi";
 
 type PageProps = {
   params: Promise<{
@@ -13,16 +14,15 @@ export default async function LocationDetailPage({ params }: PageProps) {
   const locationName = decodeURIComponent(name).toLowerCase();
 
   // Fetch location
-  const res = await fetch(
-    `https://pokeapi.co/api/v2/location/${locationName}`,
-    { cache: "no-store" }
-  );
+  const res = await getLocation(locationName, {
+    cache: "no-store",
+  });
 
   if (!res.ok) {
     notFound();
   }
 
-  const location = await res.json();
+  const location = res.data;
 
   return (
     <div className="space-y-10">
@@ -61,8 +61,15 @@ export default async function LocationDetailPage({ params }: PageProps) {
 /* ---------------- Area Card ---------------- */
 
 async function AreaCard({ area }: { area: any }) {
-  const res = await fetch(area.url, { cache: "no-store" });
-  const data = await res.json();
+  const res = await getByUrl<any>(area.url, {
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    return null;
+  }
+
+  const data = res.data;
 
   const pokemon = data.pokemon_encounters.map(
     (p: any) => p.pokemon.name

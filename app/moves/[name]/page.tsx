@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import BackButton from "@/app/components/BackButton";
+import { getMove } from "@/app/utils/pokemonapi";
 
 type PageProps = {
   params: Promise<{
@@ -12,16 +13,13 @@ export default async function MoveDetailPage({ params }: PageProps) {
   const { name } = await params;
   const moveName = decodeURIComponent(name).toLowerCase();
 
-  const res = await fetch(
-    `https://pokeapi.co/api/v2/move/${moveName}`,
-    { cache: "no-store" }
-  );
+  const res = await getMove(moveName, { cache: "no-store" });
 
   if (!res.ok) {
     notFound();
   }
 
-  const move = await res.json();
+  const move = res.data;
 
   return (
     <div className="space-y-10">

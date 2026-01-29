@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { getGeneration } from "@/app/utils/pokemonapi";
+import SearchBar from "@/app/components/SearchBar";
 
 type Generation = {
   main_region: {
@@ -29,17 +31,14 @@ export default function GenerationDetailPage({
       const { name } = await params;
       const genName = decodeURIComponent(name).toLowerCase();
 
-      const res = await fetch(
-        `https://pokeapi.co/api/v2/generation/${genName}`
-      );
+      const res = await getGeneration(genName);
 
       if (!res.ok) {
         setLoading(false);
         return;
       }
 
-      const data = await res.json();
-      setGeneration(data);
+      setGeneration(res.data);
       setLoading(false);
     }
 
@@ -98,12 +97,11 @@ export default function GenerationDetailPage({
             </p>
           </div>
 
-          <input
-            type="text"
-            placeholder="Search Pokémon Species"
+          <SearchBar
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="border rounded-lg px-4 py-2 w-full max-w-sm"
+            onChange={setSearch}
+            placeholder="Search Pokémon Species"
+            className="rounded-lg"
           />
         </div>
 

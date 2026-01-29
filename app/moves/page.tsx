@@ -2,25 +2,25 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-
-type Move = {
-  name: string;
-  url: string;
-};
+import {
+  getMoveList,
+  type NamedApiResource,
+} from "@/app/utils/pokemonapi";
+import SearchBar from "@/app/components/SearchBar";
 
 export default function MovesPage() {
-  const [moves, setMoves] = useState<Move[]>([]);
+  const [moves, setMoves] = useState<NamedApiResource[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchMoves() {
       try {
-        const res = await fetch(
-          "https://pokeapi.co/api/v2/move?limit=2000"
-        );
-        const data = await res.json();
-        setMoves(data.results);
+        const result = await getMoveList(2000);
+        if (!result.ok) {
+          throw new Error("Failed to fetch moves");
+        }
+        setMoves(result.data.results);
       } catch (err) {
         console.error("Failed to fetch moves", err);
       } finally {
@@ -49,12 +49,11 @@ export default function MovesPage() {
       </div>
 
       <div className="mb-6 flex justify-end">
-        <input
-          type="text"
-          placeholder="Search Moves"
+        <SearchBar
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border rounded px-4 py-2 w-full max-w-sm"
+          onChange={setSearch}
+          placeholder="Search Moves"
+          className="rounded"
         />
       </div>
 

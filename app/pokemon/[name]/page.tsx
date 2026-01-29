@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import BackButton from "@/app/components/BackButton";
+import {
+  getPokemon,
+  getPokemonEncounters,
+} from "@/app/utils/pokemonapi";
 
 type PageProps = {
   params: Promise<{
@@ -13,25 +17,23 @@ export default async function PokemonDetailPage({ params }: PageProps) {
   const pokemonName = decodeURIComponent(name).toLowerCase();
 
   // Fetch Pokémon details
-  const pokemonRes = await fetch(
-    `https://pokeapi.co/api/v2/pokemon/${pokemonName}`,
-    { cache: "no-store" }
-  );
+  const pokemonRes = await getPokemon(pokemonName, {
+    cache: "no-store",
+  });
 
   if (!pokemonRes.ok) {
     notFound();
   }
 
-  const pokemon = await pokemonRes.json();
+  const pokemon = pokemonRes.data;
 
   // Fetch encounter locations
-  const encountersRes = await fetch(
-    `https://pokeapi.co/api/v2/pokemon/${pokemonName}/encounters`,
-    { cache: "no-store" }
-  );
+  const encountersRes = await getPokemonEncounters(pokemonName, {
+    cache: "no-store",
+  });
 
   const encounters: any[] = encountersRes.ok
-    ? await encountersRes.json()
+    ? encountersRes.data
     : [];
 
   const locations: string[] = Array.from(
@@ -128,9 +130,15 @@ export default async function PokemonDetailPage({ params }: PageProps) {
 
 function SpriteCard({ title, src }: { title: string; src: string }) {
   return (
-    <div className="border rounded-xl p-6 shadow-sm text-center">
-      <p className="font-semibold mb-2">{title}</p>
-      <img src={src} alt={title} className="mx-auto" />
+    <div className="border rounded-2xl p-6 shadow-sm text-center bg-gradient-to-br from-white to-yellow-50">
+      <p className="font-semibold mb-3 text-gray-700">{title}</p>
+      <div className="mx-auto w-40 h-40 sm:w-48 sm:h-48 rounded-full bg-white shadow-inner flex items-center justify-center ring-2 ring-yellow-200">
+        <img
+          src={src}
+          alt={title}
+          className="w-32 h-32 sm:w-40 sm:h-40 object-contain drop-shadow"
+        />
+      </div>
     </div>
   );
 }

@@ -2,25 +2,25 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-
-type Location = {
-  name: string;
-  url: string;
-};
+import {
+  getLocationList,
+  type NamedApiResource,
+} from "@/app/utils/pokemonapi";
+import SearchBar from "@/app/components/SearchBar";
 
 export default function LocationsPage() {
-  const [locations, setLocations] = useState<Location[]>([]);
+  const [locations, setLocations] = useState<NamedApiResource[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchLocations() {
       try {
-        const res = await fetch(
-          "https://pokeapi.co/api/v2/location?limit=2000"
-        );
-        const data = await res.json();
-        setLocations(data.results);
+        const result = await getLocationList(2000);
+        if (!result.ok) {
+          throw new Error("Failed to fetch locations");
+        }
+        setLocations(result.data.results);
       } catch (err) {
         console.error("Failed to fetch locations", err);
       } finally {
@@ -49,12 +49,11 @@ export default function LocationsPage() {
       </div>
 
       <div className="mb-6 flex justify-end">
-        <input
-          type="text"
-          placeholder="Search Locations"
+        <SearchBar
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border rounded px-4 py-2 w-full max-w-sm"
+          onChange={setSearch}
+          placeholder="Search Locations"
+          className="rounded"
         />
       </div>
 
